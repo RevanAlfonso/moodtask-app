@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTask - To-Do App Estetik & Personal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        .task-item.deleting {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        .task-item.adding {
+            animation: slideIn 0.5s ease forwards;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .mood-chill {
+            background-color: #a0b4c8;
+            border-left: 4px solid #718eae;
+        }
+        .mood-focus {
+            background-color: #c8a8e0;
+            border-left: 4px solid #9966cc;
+        }
+        .mood-productive {
+            background-color: #ffeaaa;
+            border-left: 4px solid #ffd700;
+        }
+        .mood-night {
+            background-color: #556b85;
+            border-left: 4px solid #34495e;
+            color: #fff;
+        }
+        .dark .mood-chill {
+            background-color: #445566;
+            border-left: 4px solid #667788;
+        }
+        .dark .mood-focus {
+            background-color: #664488;
+            border-left: 4px solid #553377;
+        }
+        .dark .mood-productive {
+            background-color: #997700;
+            border-left: 4px solid #ccaa00;
+        }
+        .dark .mood-night {
+            background-color: #223344;
+            border-left: 4px solid #112233;
+        }
+        .task-enter {
+            transform: translateY(-10px);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="transition-colors duration-300">
+    <div id="app" class="min-h-screen flex flex-col items-center transition-colors duration-300">
+        <!-- Header & Dark Mode Toggle -->
+        <header class="w-full py-6 flex justify-center items-center relative transition-colors duration-300">
+            <div class="absolute right-6 top-6">
+                <button id="darkModeToggle" class="p-2 rounded-full">
+                    <i id="darkModeIcon" class="fas fa-moon text-2xl"></i>
+                </button>
+            </div>
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-1 transition-colors duration-300">MoodTask</h1>
+                <p class="text-lg font-light transition-colors duration-300">To-Do App Estetik & Personal ✨</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="w-full max-w-lg px-4 flex-1">
+            <!-- Add Task Form -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 transition-colors duration-300">
+                <h2 class="text-xl font-semibold mb-4 transition-colors duration-300">Tambah Tugas Baru</h2>
+                <form id="taskForm" class="space-y-4">
+                    <div>
+                        <input type="text" id="taskInput" placeholder="Apa tugasmu hari ini?" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-colors duration-300">
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-medium text-sm transition-colors duration-300">Pilih Mood</label>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="cursor-pointer flex items-center p-2 rounded-md bg-blue-100 hover:bg-blue-200 transition-colors duration-300">
+                                <input type="radio" name="taskMood" value="chill" class="mr-2" checked>
+                                <span>🌿 Chill</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center p-2 rounded-md bg-purple-100 hover:bg-purple-200 transition-colors duration-300">
+                                <input type="radio" name="taskMood" value="focus" class="mr-2">
+                                <span>🔥 Fokus</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center p-2 rounded-md bg-yellow-100 hover:bg-yellow-200 transition-colors duration-300">
+                                <input type="radio" name="taskMood" value="productive" class="mr-2">
+                                <span>☀️ Produktif</span>
+                            </label>
+                            <label class="cursor-pointer flex items-center p-2 rounded-md bg-blue-800 text-white hover:bg-blue-900 transition-colors duration-300">
+                                <input type="radio" name="taskMood" value="night" class="mr-2">
+                                <span>🌙 Malam</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        Tambah Tugas ✨
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mood Filter -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 transition-colors duration-300">
+                <h2 class="text-xl font-semibold mb-4 transition-colors duration-300">Filter Berdasarkan Mood</h2>
+                <div class="flex flex-wrap gap-2">
+                    <button class="mood-filter p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors duration-300 active" data-mood="all">
+                        ✨ Semua
+                    </button>
+                    <button class="mood-filter p-2 rounded-md bg-blue-100 hover:bg-blue-200 transition-colors duration-300" data-mood="chill">
+                        🌿 Chill
+                    </button>
+                    <button class="mood-filter p-2 rounded-md bg-purple-100 hover:bg-purple-200 transition-colors duration-300" data-mood="focus">
+                        🔥 Fokus
+                    </button>
+                    <button class="mood-filter p-2 rounded-md bg-yellow-100 hover:bg-yellow-200 transition-colors duration-300" data-mood="productive">
+                        ☀️ Produktif
+                    </button>
+                    <button class="mood-filter p-2 rounded-md bg-blue-800 text-white hover:bg-blue-900 transition-colors duration-300" data-mood="night">
+                        🌙 Malam
+                    </button>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 transition-colors duration-300">
+                <h2 class="text-xl font-semibold mb-4 transition-colors duration-300">Daftar Tugas</h2>
+                <div id="taskList" class="space-y-3">
+                    <!-- Tasks will be dynamically added here -->
+                </div>
+                <div id="emptyState" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-list-check text-4xl mb-3"></i>
+                    <p>Belum ada tugas. Yuk tambahkan!</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="w-full py-6 text-center transition-colors duration-300">
+            <p class="text-sm font-light transition-colors duration-300">© 2025 MoodTask - Developed by Apphaze.id</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize tasks from localStorage
+        let tasks = JSON.parse(localStorage.getItem('moodTasks')) || [];
+        let currentFilter = 'all';
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        // DOM Elements
+        const app = document.getElementById('app');
+        const taskForm = document.getElementById('taskForm');
+        const taskInput = document.getElementById('taskInput');
+        const taskList = document.getElementById('taskList');
+        const emptyState = document.getElementById('emptyState');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        const moodFilters = document.querySelectorAll('.mood-filter');
+
+        // Initialize Dark Mode
+        if (isDarkMode) {
+            enableDarkMode();
+        }
+
+        // Apply Dark Mode
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark');
+            app.classList.add('bg-gray-900', 'text-white');
+            document.querySelectorAll('.bg-white').forEach(el => {
+                el.classList.remove('bg-white');
+                el.classList.add('bg-gray-800');
+            });
+            darkModeIcon.classList.remove('fa-moon');
+            darkModeIcon.classList.add('fa-sun', 'text-yellow-300');
+            isDarkMode = true;
+            localStorage.setItem('darkMode', 'true');
+        }
+
+        // Disable Dark Mode
+        function disableDarkMode() {
+            document.documentElement.classList.remove('dark');
+            app.classList.remove('bg-gray-900', 'text-white');
+            document.querySelectorAll('.bg-gray-800').forEach(el => {
+                el.classList.remove('bg-gray-800');
+                el.classList.add('bg-white');
+            });
+            darkModeIcon.classList.remove('fa-sun', 'text-yellow-300');
+            darkModeIcon.classList.add('fa-moon');
+            isDarkMode = false;
+            localStorage.setItem('darkMode', 'false');
+        }
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            if (isDarkMode) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        });
+
+        // Render Task List
+        function renderTasks() {
+            // Clear task list
+            taskList.innerHTML = '';
+            
+            // Filter tasks
+            const filteredTasks = currentFilter === 'all' 
+                ? tasks 
+                : tasks.filter(task => task.mood === currentFilter);
+            
+            // Show empty state if no tasks
+            if (filteredTasks.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+            
+            // Render tasks
+            filteredTasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.classList.add(
+                    'task-item', 
+                    'mood-' + task.mood, 
+                    'p-4', 
+                    'rounded-lg', 
+                    'shadow', 
+                    'flex', 
+                    'justify-between', 
+                    'items-center',
+                    'adding'
+                );
+                taskElement.dataset.id = task.id;
+                
+                // Add the mood icon based on task mood
+                let moodIcon;
+                switch(task.mood) {
+                    case 'chill': moodIcon = '🌿'; break;
+                    case 'focus': moodIcon = '🔥'; break;
+                    case 'productive': moodIcon = '☀️'; break;
+                    case 'night': moodIcon = '🌙'; break;
+                    default: moodIcon = '✨';
+                }
+                
+                taskElement.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-lg mr-2">${moodIcon}</span>
+                        <span>${task.text}</span>
+                    </div>
+                    <button class="delete-btn text-lg p-1 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors duration-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                taskList.appendChild(taskElement);
+                
+                // Remove adding class after animation completes
+                setTimeout(() => {
+                    taskElement.classList.remove('adding');
+                }, 500);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', deleteTask);
+            });
+        }
+
+        // Add Task
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get task text and mood
+            const taskText = taskInput.value.trim();
+            const taskMood = document.querySelector('input[name="taskMood"]:checked').value;
+            
+            if (taskText) {
+                // Create new task
+                const newTask = {
+                    id: Date.now().toString(),
+                    text: taskText,
+                    mood: taskMood,
+                    completed: false,
+                    created: new Date().toISOString()
+                };
+                
+                // Add to tasks array
+                tasks.unshift(newTask);
+                
+                // Save to localStorage
+                localStorage.setItem('moodTasks', JSON.stringify(tasks));
+                
+                // Clear input
+                taskInput.value = '';
+                
+                // Re-render tasks
+                renderTasks();
+            }
+        });
+
+        // Delete Task
+        function deleteTask(e) {
+            const taskElement = e.currentTarget.closest('.task-item');
+            const taskId = taskElement.dataset.id;
+            
+            // Add deleting animation class
+            taskElement.classList.add('deleting');
+            
+            // Remove task after animation completes
+            setTimeout(() => {
+                tasks = tasks.filter(task => task.id !== taskId);
+                localStorage.setItem('moodTasks', JSON.stringify(tasks));
+                renderTasks();
+            }, 300);
+        }
+
+        // Filter Tasks
+        moodFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                // Remove active class from all filters
+                moodFilters.forEach(f => f.classList.remove('active', 'ring-2', 'ring-blue-500'));
+                
+                // Add active class to clicked filter
+                filter.classList.add('active', 'ring-2', 'ring-blue-500');
+                
+                // Set current filter
+                currentFilter = filter.dataset.mood;
+                
+                // Re-render tasks
+                renderTasks();
+            });
+        });
+
+        // Initial render
+        renderTasks();
+    </script>
+</body>
+</html>
